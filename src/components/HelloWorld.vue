@@ -1,11 +1,12 @@
 <template @keydown.left="left()" @keydown.right="right()">
   <div class="hello">
     <div v-for="(line, index) in body" :key="index">
-      <span v-for="(dot, index2) in line" :key="index2"> {{ dot }} </span>
+      <span v-for="(dot, index2) in line" :key="index2" :class="{active:dot=='X'||dot=='T'}"> {{ dot }} </span>
     </div>
     <input type="text" @keydown.left="left()" @keydown.right="right()" />
     <div @click="start()">시작</div>
     <div @click="pause()">정지</div>
+    <div @click="reset()">리셋</div>
   </div>
 </template>
 
@@ -21,17 +22,49 @@ export default {
       playing: false,
       reached: true,
       block: [
+        //Z모양
         [
           { y: 0, x: -1 },
           { y: 0, x: 0 },
           { y: 1, x: 0 },
           { y: 1, x: 1 },
         ],
+        //역 Z모양
+        [
+          { y: 0, x: 1 },
+          { y: 0, x: 0 },
+          { y: 1, x: 0 },
+          { y: 1, x: -1 },
+        ],
+        //L모양
+        [
+          { y: -1, x: 0 },
+          { y: 0, x: 0 },
+          { y: 1, x: 0 },
+          { y: 1, x: 1 },
+        ],
+        //역 L모양
+        [
+          { y: -1, x: 0 },
+          { y: 0, x: 0 },
+          { y: 1, x: 0 },
+          { y: 1, x: -1 },
+        ],
+        //역 L모양
+        [
+          { y: -1, x: 0 },
+          { y: 0, x: 0 },
+          { y: 1, x: 0 },
+          { y: 2, x: 0 },
+        ],
       ],
       target: [],
     };
   },
   methods: {
+    reset() {
+      this.body = new Array(20).fill(new Array(10).fill(0));
+    },
     modify(y, x, data) {
       console.log(y, x, data);
       let temp = [...this.body[y]];
@@ -55,9 +88,14 @@ export default {
           // this.target.sort((a,b)=>a.x-b.x)[this.target.length-1].x
 
           if (this.reached) {
-            this.target = this.block[0].map((v) => {
+            let random = Math.floor(Math.random()*4)
+            random=3;
+            this.target = this.block[random].map((v) => {
               return { y: v.y + this.y, x: v.x + this.x };
             });
+            if(random==3||random==4||random==2){
+              this.y++;
+            }
             this.target.forEach((v) => {
               this.modify(v.y, v.x, "X");
             });
@@ -80,6 +118,18 @@ export default {
               console.log("바닥 도달");
               this.reachFloor();
               return;
+            } else if (
+              this.target.filter((v) => {
+                return (
+                  this.body[v.y + 1][v.x] == "X" &&
+                  this.target.filter((v2) => v2.x == v.x && v2.y == v.y + 1)
+                    .length == 0
+                );
+              }).length != 0
+            ) {
+              console.log("바닥 도달");
+              this.reachFloor();
+              return;
             }
 
             if (this.target.sort((a, b) => b.y - a.y)[0].y > 0) {
@@ -91,12 +141,13 @@ export default {
             for (let i = 0; i < this.target.length; i++) {
               this.modify(++this.target[i].y, this.target[i].x, "X");
             }
-            this.y++;
+            this.modify(++this.y, this.x, "T");
           }
         }, 1000);
       }
     },
     reachFloor() {
+      this.modify(this.y, this.x, "X");
       this.x = this.startCoord[1];
       this.y = this.startCoord[0];
       console.log(this.x, this.y, "으로 리셋");
@@ -112,8 +163,8 @@ export default {
         this.target.filter((v) => {
           return (
             this.body[v.y][v.x - 1] == "X" &&
-            !this.target.map((v2) => v2.x).includes(v.x - 1) &&
-            !this.target.map((v2) => v2.y).includes(v.y)
+            this.target.filter((v2) => v2.x == v.x - 1 && v2.y == v.y).length ==
+              0
           );
         }).length != 0
       ) {
@@ -123,30 +174,103 @@ export default {
       } else {
         this.target.forEach((v) => {
           this.modify(v.y, v.x, 0);
+        });
+        this.target.forEach((v) => {
           this.modify(v.y, --v.x, "X");
         });
+        this.modify(this.y, --this.x, "T");
       }
     },
     right() {
-      console.log("우로 이동");
-      if (this.x != 9 && this.playing && this.body[this.y][this.x + 1] != "X") {
-        this.modify(this.y, this.x, 0);
-        this.modify(this.y, ++this.x, "X");
+      if (
+        this.target.filter((v) => {
+          return (
+            this.body[v.y][v.x + 1] == "X" &&
+            this.target.filter((v2) => v2.x == v.x + 1 && v2.y == v.y).length ==
+              0
+          );
+        }).length != 0
+      ) {
+        return;
+      } else if (this.target.sort((a, b) => b.x - a.x)[0].x == 9) {
+        return;
+      } else {
+        this.target.forEach((v) => {
+          this.modify(v.y, v.x, 0);
+        });
+        this.target.forEach((v) => {
+          this.modify(v.y, ++v.x, "X");
+        });
+        this.modify(this.y, ++this.x, "T");
       }
     },
     down() {
       console.log("아래로 이동");
-      if (this.y == this.body.length - 1) {
+
+      if (this.target.sort((a, b) => b.y - a.y)[0].y == this.body.length - 1) {
+        console.log("바닥 도달");
+        this.reachFloor();
         return;
-      } else if (this.body[this.y + 1][this.x] == "X") {
+      } else if (
+        this.body[this.target.sort((a, b) => b.y - a.y)[0].y + 1][this.x] == "X"
+      ) {
+        console.log("바닥 도달");
+        this.reachFloor();
+        return;
+      } else if (
+        this.target.filter((v) => {
+          return (
+            this.body[v.y + 1][v.x] == "X" &&
+            this.target.filter((v2) => v2.x == v.x && v2.y == v.y + 1).length ==
+              0
+          );
+        }).length != 0
+      ) {
+        console.log("바닥 도달");
+        this.reachFloor();
         return;
       } else {
-        this.modify(this.y, this.x, 0);
-        this.modify(++this.y, this.x, "X");
+        this.target.forEach((v) => {
+          this.modify(v.y, v.x, 0);
+        });
+        this.target.forEach((v) => {
+          this.modify(++v.y, v.x, "X");
+        });
+        this.modify(++this.y, +this.x, "T");
       }
     },
     up() {
       console.log("위 클릭");
+      let temp = JSON.parse(JSON.stringify(this.target));
+      console.log("처리전", this.target);
+
+      // 시계방향 처리
+      temp = temp.map((v) => {
+        return {
+          x: v.x - this.x,
+          y: v.y - this.y,
+        };
+      });
+      console.log("temp", temp);
+
+      temp = temp.map((v) => {
+        return {
+          x: -v.y + this.x,
+          y: v.x + this.y,
+        };
+      });
+
+      console.log("temp", temp);
+
+      this.target.forEach((v) => {
+        this.modify(v.y, v.x, 0);
+      });
+
+      this.target = temp;
+      this.target.forEach((v) => {
+        this.modify(v.y, v.x, "X");
+      });
+      this.modify(this.y, this.x, "T");
     },
   },
   mounted() {
@@ -188,5 +312,7 @@ export default {
 </script>
 
 <style scoped>
+  .active{
+    background-color: black;
+  }
 </style>
-)

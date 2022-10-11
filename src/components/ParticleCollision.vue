@@ -10,6 +10,7 @@
           left: particle.x + -px / 2 + 'px',
         }"
         :class="{red:index==1}"
+        :id="index"
         ><b>ㅇ</b></span
       >
     </div>
@@ -56,7 +57,7 @@ export default {
         this.particleCollision();
         // console.log(`${this.sequence}회차 실행중~`);
         this.sequence++;
-      }, 20);
+      }, 40);
     },
     end() {
       clearInterval(interval);
@@ -98,16 +99,14 @@ export default {
       for (let i = 0; i < this.particles.length; i++) {
         for (let j = 0; j < this.particles.length; j++) {
           if (arr.includes(i) || arr.includes(j)||i==j) {
-            break;
+            continue;
           }
           let p1 = this.particles[i];
           let p2 = this.particles[j];
 
           let distance = ((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2) ** 0.5;
 
-        //   console.log(i, j, distance);
-
-          if (distance < 8 ** 0.5) {
+          if (distance < 8) {
             arr.push(i, j);
 
             // let theta1 = Math.acos(p1.x/(p1.x**2+p1.y**2)**0.5)/Math.PI*180;
@@ -130,15 +129,6 @@ export default {
 
             let p2fy = p1.vx*Math.sin(angle/180*Math.PI)+p2.vy*Math.sin(angle/180*Math.PI+0.5*Math.PI);
 
-            console.log("p1",p1,i);
-            console.log("p2",p2,j);
-            console.log("distance",distance);
-            console.log("angle",angle);
-            console.log("p1fx",p1fx);
-            console.log("p1fy",p1fy);
-            console.log("p2fx",p2fx);
-            console.log("p2fy",p2fy);
-
             p1.vx=p1fx;
             p1.vy=p1fy;
 
@@ -158,7 +148,6 @@ export default {
           // p1_loc-p2_loc
         }
       }
-      console.log("arr2",arr);
     },
   },
   mounted(){

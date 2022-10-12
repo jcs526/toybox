@@ -10,6 +10,7 @@
 </template>
 
 <script>
+let interval;
 export default {
   data() {
     return {
@@ -23,6 +24,7 @@ export default {
       coord7: { x: -100, y: -100, z: -100 },
       coord8: { x: 100, y: -100, z: -100 },
       selected: 1,
+      sequence : 1,
     };
   },
   methods: {
@@ -211,7 +213,8 @@ export default {
         const canvas = document.querySelector("#canvas");
         const ctx = canvas.getContext("2d");
 
-        for (let i = 1; i <= 100; i++) {
+        interval = setInterval(()=>{
+          let i = this.sequence;
           let arr = [];
           for (let j = 0; j < 8; j++) {
             let x = crd1[j].x + ((crd2[j].x - crd1[j].x) * i) / 100;
@@ -259,7 +262,9 @@ export default {
           ctx.moveTo(100, 100 + 50 + 25 / 2);
           ctx.lineTo(100, 100 + 50 + 50 + 25 / 2);
           ctx.stroke();
-        }
+
+          this.sequence++;
+        },100)
       }
     },
     clear() {
@@ -331,6 +336,13 @@ export default {
     ctx.lineTo(200 + 20 * 2, 200 + 20 * 1);
     ctx.fill();
   },
+  watch:{
+    sequence(newV){
+      if(newV>200){
+        clearInterval(interval);
+      }
+    }
+  }
 };
 </script>
 

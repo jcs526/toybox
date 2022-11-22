@@ -2,9 +2,10 @@
   <div id="app">
     <router-view/>
     <nav>
-      <router-link to="/">Home</router-link> |
+      <router-link to="/">Tetris</router-link> |
       <router-link to="/particle">particle</router-link> |
-      <router-link to="/cube">cube</router-link>
+      <router-link to="/cube">cube</router-link>|
+      <router-link to="/oracle">oracle</router-link>
     </nav>
   </div>
 </template>

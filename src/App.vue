@@ -5,7 +5,8 @@
       <router-link to="/">Tetris</router-link> |
       <router-link to="/particle">particle</router-link> |
       <router-link to="/cube">cube</router-link>|
-      <router-link to="/oracle">oracle</router-link>
+      <router-link to="/oracle">oracle</router-link>|
+      <router-link to="/excel">excel</router-link>
     </nav>
   </div>
 </template>
